@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猜數字遊戲</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .game-container {
+            text-align: center;
+        }
+
+        .game-input {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            margin: 20px 0;
+            width: 200px;
+        }
+
+        .game-btn {
+            font-size: 1.2em;
+            padding: 12px 40px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .game-btn:hover {
+            transform: scale(1.05);
+            background: #5568d3;
+        }
+
+        .message {
+            font-size: 1.5em;
+            margin: 20px 0;
+            min-height: 40px;
+            font-weight: bold;
+        }
+
+        .success {
+            color: #28a745;
+        }
+
+        .hint {
+            color: #ff6b6b;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            gap: 20px;
+        }
+
+        .stat-item {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-link">← 返回首頁</a>
+        
+        <header>
+            <h1>🎮 猜數字遊戲</h1>
+            <p>我想了一個 1 到 100 之間的數字，你能猜中嗎？</p>
+        </header>
+
+        <div class="card game-container">
+            <h2>開始遊戲</h2>
+            <div class="message" id="message">輸入你的猜測！</div>
+            
+            <input type="number" id="guessInput" class="game-input" min="1" max="100" placeholder="輸入數字">
+            <br>
+            <button onclick="checkGuess()" class="game-btn">提交猜測</button>
+            <button onclick="resetGame()" class="game-btn" style="background: #764ba2; margin-left: 10px;">重新開始</button>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="attempts">0</div>
+                    <div>嘗試次數</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="best">-</div>
+                    <div>最佳記錄</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let targetNumber = Math.floor(Math.random() * 100) + 1;
+        let attempts = 0;
+        let bestScore = localStorage.getItem('bestScore') || '-';
+
+        document.getElementById('best').textContent = bestScore;
+
+        // 支援 Enter 鍵提交
+        document.getElementById('guessInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkGuess();
+            }
+        });
+
+        function checkGuess() {
+            const input = document.getElementById('guessInput');
+            const guess = parseInt(input.value);
+            const message = document.getElementById('message');
+
+            if (!guess || guess < 1 || guess > 100) {
+                message.textContent = '請輸入 1 到 100 之間的數字！';
+                message.className = 'message hint';
+                return;
+            }
+
+            attempts++;
+            document.getElementById('attempts').textContent = attempts;
+
+            if (guess === targetNumber) {
+                message.textContent = `🎉 恭喜！你猜對了！用了 ${attempts} 次嘗試。`;
+                message.className = 'message success';
+                
+                // 更新最佳記錄
+                if (bestScore === '-' || attempts < parseInt(bestScore)) {
+                    bestScore = attempts;
+                    localStorage.setItem('bestScore', bestScore);
+                    document.getElementById('best').textContent = bestScore;
+                }
+            } else if (guess < targetNumber) {
+                message.textContent = '📈 太小了！試試更大的數字。';
+                message.className = 'message hint';
+            } else {
+                message.textContent = '📉 太大了！試試更小的數字。';
+                message.className = 'message hint';
+            }
+
+            input.value = '';
+            input.focus();
+        }
+
+        function resetGame() {
+            targetNumber = Math.floor(Math.random() * 100) + 1;
+            attempts = 0;
+            document.getElementById('attempts').textContent = '0';
+            document.getElementById('message').textContent = '遊戲已重新開始！';
+            document.getElementById('message').className = 'message';
+            document.getElementById('guessInput').value = '';
+        }
+    </script>
+</body>
+</html>

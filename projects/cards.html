@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動式卡片展示</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 300px;
+            perspective: 1000px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .flip-card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .flip-card-back {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .card-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card-description {
+            font-size: 1em;
+            line-height: 1.5;
+        }
+
+        .interactive-demo {
+            margin-top: 40px;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .color-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid white;
+            transition: transform 0.3s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.2);
+        }
+
+        .demo-box {
+            width: 100%;
+            height: 200px;
+            border-radius: 15px;
+            transition: background 0.5s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-link">← 返回首頁</a>
+        
+        <header>
+            <h1>🎨 互動式卡片展示</h1>
+            <p>滑鼠移到卡片上看看效果！</p>
+        </header>
+
+        <div class="card">
+            <h2>翻轉卡片</h2>
+            <div class="cards-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="card-icon">🚀</div>
+                            <div class="card-title">創新</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <div class="card-description">
+                                持續探索新技術，<br>
+                                用創意解決問題，<br>
+                                推動進步與發展。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="card-icon">💡</div>
+                            <div class="card-title">學習</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <div class="card-description">
+                                終身學習的態度，<br>
+                                不斷充實自己，<br>
+                                迎接每個挑戰。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="card-icon">🎯</div>
+                            <div class="card-title">專注</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <div class="card-description">
+                                全神貫注於目標，<br>
+                                追求卓越品質，<br>
+                                達成最佳成果。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="card-icon">🤝</div>
+                            <div class="card-title">合作</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <div class="card-description">
+                                團隊協作精神，<br>
+                                互相支持成長，<br>
+                                共創美好未來。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card interactive-demo">
+            <h2>互動色彩選擇器</h2>
+            <p style="text-align: center; margin-bottom: 20px;">點擊下方顏色改變背景</p>
+            
+            <div class="color-picker">
+                <div class="color-option" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" 
+                     onclick="changeColor('linear-gradient(135deg, #667eea 0%, #764ba2 100%)')"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);" 
+                     onclick="changeColor('linear-gradient(135deg, #f093fb 0%, #f5576c 100%)')"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);" 
+                     onclick="changeColor('linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)')"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);" 
+                     onclick="changeColor('linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)')"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);" 
+                     onclick="changeColor('linear-gradient(135deg, #fa709a 0%, #fee140 100%)')"></div>
+            </div>
+
+            <div id="demoBox" class="demo-box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                點擊上方選擇顏色
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function changeColor(gradient) {
+            const box = document.getElementById('demoBox');
+            box.style.background = gradient;
+            box.textContent = '太棒了！';
+            
+            setTimeout(() => {
+                box.textContent = '點擊上方選擇顏色';
+            }, 1000);
+        }
+
+        // 為卡片添加點擊翻轉（移動設備）
+        document.querySelectorAll('.flip-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.querySelector('.flip-card-inner').style.transform = 
+                    this.querySelector('.flip-card-inner').style.transform === 'rotateY(180deg)' 
+                    ? 'rotateY(0deg)' 
+                    : 'rotateY(180deg)';
+            });
+        });
+    </script>
+</body>
+</html>
