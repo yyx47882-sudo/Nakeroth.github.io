@@ -1,16 +1,16 @@
-// 星空粒子背景特效
-class ParticleBackground {
+// 流體墨水特效 - Fluid Ink Effect
+class FluidInkBackground {
     constructor() {
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d');
-        this.particles = [];
-        this.mouse = { x: null, y: null, radius: 180 };
-        
+        this.blobs = [];
+        this.time = 0;
+        this.mouse = { x: null, y: null };
         this.init();
     }
 
     init() {
-        this.canvas.id = 'particle-canvas';
+        this.canvas.id = 'fluid-canvas';
         this.canvas.style.cssText = `
             position: fixed;
             top: 0;
@@ -23,7 +23,7 @@ class ParticleBackground {
         document.body.prepend(this.canvas);
         
         this.resize();
-        this.createParticles();
+        this.createBlobs();
         this.animate();
         
         window.addEventListener('resize', () => this.resize());
@@ -31,140 +31,133 @@ class ParticleBackground {
             this.mouse.x = e.x;
             this.mouse.y = e.y;
         });
-        window.addEventListener('mouseout', () => {
-            this.mouse.x = null;
-            this.mouse.y = null;
-        });
     }
 
     resize() {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-        this.createParticles();
     }
 
-    createParticles() {
-        this.particles = [];
-        // 大幅增加粒子數量
-        const numParticles = Math.floor((this.canvas.width * this.canvas.height) / 3000);
-        
-        for (let i = 0; i < numParticles; i++) {
-            // 星光色：白、淡藍、淡黃、淡紫
-            const colorType = Math.random();
-            let color;
-            if (colorType < 0.4) {
-                color = { r: 255, g: 255, b: 255 }; // 白色
-            } else if (colorType < 0.6) {
-                color = { r: 180, g: 220, b: 255 }; // 淡藍
-            } else if (colorType < 0.8) {
-                color = { r: 255, g: 250, b: 200 }; // 淡黃
-            } else {
-                color = { r: 220, g: 200, b: 255 }; // 淡紫
-            }
-            
-            this.particles.push({
+    createBlobs() {
+        // 創建流動的墨水團
+        const colors = [
+            { r: 20, g: 80, b: 120 },   // 深藍
+            { r: 80, g: 40, b: 100 },   // 暗紫
+            { r: 30, g: 100, b: 80 },   // 深青
+            { r: 100, g: 50, b: 70 },   // 暗紅
+            { r: 40, g: 60, b: 90 },    // 灰藍
+        ];
+
+        for (let i = 0; i < 8; i++) {
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            this.blobs.push({
                 x: Math.random() * this.canvas.width,
                 y: Math.random() * this.canvas.height,
-                size: Math.random() * 2.5 + 0.5,
-                speedX: (Math.random() - 0.5) * 0.6,
-                speedY: (Math.random() - 0.5) * 0.6,
-                opacity: Math.random() * 0.8 + 0.2,
+                radius: Math.random() * 300 + 200,
                 color: color,
-                twinkleSpeed: Math.random() * 0.03 + 0.01,
-                twinklePhase: Math.random() * Math.PI * 2
+                speedX: (Math.random() - 0.5) * 0.5,
+                speedY: (Math.random() - 0.5) * 0.5,
+                phase: Math.random() * Math.PI * 2,
+                frequency: Math.random() * 0.005 + 0.002
             });
         }
     }
 
-    drawParticle(p) {
-        // 閃爍效果
-        const twinkle = Math.sin(p.twinklePhase) * 0.4 + 0.6;
-        const currentOpacity = p.opacity * twinkle;
+    drawBlob(blob) {
+        const wobble = Math.sin(this.time * blob.frequency + blob.phase) * 50;
+        const currentRadius = blob.radius + wobble;
         
-        // 星光發光效果
         const gradient = this.ctx.createRadialGradient(
-            p.x, p.y, 0,
-            p.x, p.y, p.size * 4
+            blob.x, blob.y, 0,
+            blob.x, blob.y, currentRadius
         );
-        gradient.addColorStop(0, `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${currentOpacity})`);
-        gradient.addColorStop(0.4, `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${currentOpacity * 0.4})`);
-        gradient.addColorStop(1, `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, 0)`);
+        
+        gradient.addColorStop(0, `rgba(${blob.color.r}, ${blob.color.g}, ${blob.color.b}, 0.4)`);
+        gradient.addColorStop(0.5, `rgba(${blob.color.r}, ${blob.color.g}, ${blob.color.b}, 0.2)`);
+        gradient.addColorStop(1, `rgba(${blob.color.r}, ${blob.color.g}, ${blob.color.b}, 0)`);
         
         this.ctx.beginPath();
-        this.ctx.arc(p.x, p.y, p.size * 4, 0, Math.PI * 2);
+        this.ctx.arc(blob.x, blob.y, currentRadius, 0, Math.PI * 2);
         this.ctx.fillStyle = gradient;
         this.ctx.fill();
-        
-        // 核心亮點
-        this.ctx.beginPath();
-        this.ctx.arc(p.x, p.y, p.size * 0.6, 0, Math.PI * 2);
-        this.ctx.fillStyle = `rgba(255, 255, 255, ${currentOpacity})`;
-        this.ctx.fill();
     }
 
-    connectParticles() {
-        const maxDistance = 100;
-        
-        for (let i = 0; i < this.particles.length; i++) {
-            for (let j = i + 1; j < this.particles.length; j++) {
-                const dx = this.particles[i].x - this.particles[j].x;
-                const dy = this.particles[i].y - this.particles[j].y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < maxDistance) {
-                    const opacity = (1 - distance / maxDistance) * 0.2;
-                    this.ctx.beginPath();
-                    this.ctx.strokeStyle = `rgba(200, 220, 255, ${opacity})`;
-                    this.ctx.lineWidth = 0.5;
-                    this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
-                    this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
-                    this.ctx.stroke();
-                }
-            }
-        }
-    }
-
-    updateParticle(p) {
-        p.twinklePhase += p.twinkleSpeed;
-        
-        if (this.mouse.x !== null && this.mouse.y !== null) {
-            const dx = p.x - this.mouse.x;
-            const dy = p.y - this.mouse.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < this.mouse.radius) {
-                const force = (this.mouse.radius - distance) / this.mouse.radius;
-                const angle = Math.atan2(dy, dx);
-                p.x += Math.cos(angle) * force * 2;
-                p.y += Math.sin(angle) * force * 2;
+    updateBlob(blob) {
+        // 滑鼠吸引效果
+        if (this.mouse.x && this.mouse.y) {
+            const dx = this.mouse.x - blob.x;
+            const dy = this.mouse.y - blob.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 400) {
+                blob.x += dx * 0.002;
+                blob.y += dy * 0.002;
             }
         }
         
-        p.x += p.speedX;
-        p.y += p.speedY;
+        blob.x += blob.speedX;
+        blob.y += blob.speedY;
         
-        if (p.x < 0) p.x = this.canvas.width;
-        if (p.x > this.canvas.width) p.x = 0;
-        if (p.y < 0) p.y = this.canvas.height;
-        if (p.y > this.canvas.height) p.y = 0;
+        // 邊界反彈
+        if (blob.x < -200 || blob.x > this.canvas.width + 200) blob.speedX *= -1;
+        if (blob.y < -200 || blob.y > this.canvas.height + 200) blob.speedY *= -1;
+    }
+
+    drawNoise() {
+        // 添加微弱噪點紋理
+        const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        const data = imageData.data;
+        
+        for (let i = 0; i < data.length; i += 4) {
+            const noise = (Math.random() - 0.5) * 15;
+            data[i] += noise;
+            data[i + 1] += noise;
+            data[i + 2] += noise;
+        }
+        
+        this.ctx.putImageData(imageData, 0, 0);
+    }
+
+    drawScanlines() {
+        // CRT 掃描線效果
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
+        for (let y = 0; y < this.canvas.height; y += 3) {
+            this.ctx.fillRect(0, y, this.canvas.width, 1);
+        }
     }
 
     animate() {
-        // 深色星空背景
-        this.ctx.fillStyle = '#0a0f1e';
+        this.time++;
+        
+        // 深黑背景帶微弱漸層
+        const bgGradient = this.ctx.createRadialGradient(
+            this.canvas.width / 2, this.canvas.height / 2, 0,
+            this.canvas.width / 2, this.canvas.height / 2, this.canvas.width
+        );
+        bgGradient.addColorStop(0, '#0d0d0d');
+        bgGradient.addColorStop(1, '#050505');
+        this.ctx.fillStyle = bgGradient;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        this.connectParticles();
+        // 混合模式讓顏色更有層次
+        this.ctx.globalCompositeOperation = 'screen';
         
-        this.particles.forEach(p => {
-            this.updateParticle(p);
-            this.drawParticle(p);
+        this.blobs.forEach(blob => {
+            this.updateBlob(blob);
+            this.drawBlob(blob);
         });
+        
+        this.ctx.globalCompositeOperation = 'source-over';
+        
+        // 加入掃描線和噪點（每隔幾幀更新一次噪點避免效能問題）
+        this.drawScanlines();
+        if (this.time % 3 === 0) {
+            this.drawNoise();
+        }
         
         requestAnimationFrame(() => this.animate());
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    new ParticleBackground();
+    new FluidInkBackground();
 });
